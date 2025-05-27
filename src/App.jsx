@@ -44,29 +44,47 @@ function App() {
     // once when the component is mounted
     useEffect(() => {
         let isFirstFetch = true;
+        const isGithubPages = window.location.hostname.endsWith('github.io');
         const fetchData = () => {
             if (isFirstFetch) setLoading(true);
             setError(null);
-            Axios.get(
-                'http://localhost:4000/api/coins'
-            )
+            const apiUrl = isGithubPages
+                ? 'https://api.coincap.io/v2/assets'
+                : 'http://localhost:4000/api/coins';
+            Axios.get(apiUrl)
                 .then((res) => {
-                    // CryptoCompare returns data.Data as an array of coin objects
-                    const coins = Array.isArray(res.data.Data)
-                        ? res.data.Data.map((item) => {
-                            const coin = item.CoinInfo || {};
-                            const raw = (item.RAW && item.RAW.USD) || {};
-                            return {
-                                id: coin.Id,
-                                name: coin.FullName,
-                                symbol: coin.Name,
-                                image: `https://www.cryptocompare.com${coin.ImageUrl || ''}`,
-                                market_cap: raw.MKTCAP || 0,
-                                current_price: raw.PRICE || 0,
-                                total_supply: raw.SUPPLY || 'N/A',
-                                total_volume: raw.VOLUME24HOUR || 0,
-                            };
-                        }) : [];
+                    let coins = [];
+                    if (isGithubPages) {
+                        coins = Array.isArray(res.data.data)
+                            ? res.data.data.map((item, idx) => ({
+                                id: item.id,
+                                name: item.name,
+                                symbol: item.symbol,
+                                image: `https://assets.coincap.io/assets/icons/${item.symbol.toLowerCase()}@2x.png`,
+                                market_cap: item.marketCapUsd,
+                                current_price: item.priceUsd,
+                                total_supply: item.supply,
+                                total_volume: item.volumeUsd24Hr,
+                                market_cap_rank: idx + 1,
+                            }))
+                            : [];
+                    } else {
+                        coins = Array.isArray(res.data.Data)
+                            ? res.data.Data.map((item) => {
+                                const coin = item.CoinInfo || {};
+                                const raw = (item.RAW && item.RAW.USD) || {};
+                                return {
+                                    id: coin.Id,
+                                    name: coin.FullName,
+                                    symbol: coin.Name,
+                                    image: `https://www.cryptocompare.com${coin.ImageUrl || ''}`,
+                                    market_cap: raw.MKTCAP || 0,
+                                    current_price: raw.PRICE || 0,
+                                    total_supply: raw.SUPPLY || 'N/A',
+                                    total_volume: raw.VOLUME24HOUR || 0,
+                                };
+                            }) : [];
+                    }
                     // Sort by market cap and assign rank
                     const sorted = coins.slice().sort((a, b) => Number(b.market_cap) - Number(a.market_cap))
                         .map((coin, idx) => ({ ...coin, market_cap_rank: idx + 1 }));
