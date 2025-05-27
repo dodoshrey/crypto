@@ -40,6 +40,9 @@ function App() {
     // Store sorted crypto list and ranks in state, update only on data fetch
     const [sortedCrypto, setSortedCrypto] = useState([]);
 
+    const [showAllColumns, setShowAllColumns] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
     // Fetching crypto data from the API only
     // once when the component is mounted
     useEffect(() => {
@@ -90,7 +93,7 @@ function App() {
         };
 
         fetchData(); // Initial fetch
-        const interval = setInterval(fetchData, 3000); // Fetch every 3 seconds
+        const interval = setInterval(fetchData, 30000); // Fetch every 30 seconds
         return () => clearInterval(interval); // Cleanup on unmount
     }, []);
 
@@ -102,12 +105,48 @@ function App() {
         );
     }, [crypto]);
 
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Determine which columns to show
+    const showPrice = true;
+    const showMarketCap = windowWidth >= 600;
+    const showSupply = windowWidth > 800 || showAllColumns;
+    const showVolume = windowWidth > 800 || showAllColumns;
+    const isMobile = windowWidth < 600;
+
     return (
-        <div className="App">
-            <h1>Crypto Search</h1>
+        <div
+            className="App"
+            style={{
+                maxWidth: 900,
+                margin: '0 auto',
+                padding: '1em',
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center'
+            }}
+        >
+            <h1 style={{ textAlign: 'center', marginBottom: '1em', fontSize: isMobile ? '2em' : '2.5em' }}>Crypto Search</h1>
             <input
                 type="text"
                 placeholder="Search..."
+                style={{
+                    width: isMobile ? '100%' : 300,
+                    padding: '0.7em 1em',
+                    marginBottom: '1.5em',
+                    borderRadius: 8,
+                    border: '1px solid #ccc',
+                    fontSize: '1em',
+                    boxSizing: 'border-box',
+                    textAlign: 'center'
+                }}
                 onChange={(e) => {
                     setSearch(e.target.value);
                 }}
@@ -115,27 +154,131 @@ function App() {
             {loading && <p>Loading...</p>}
             {error && <p style={{ color: "red" }}>{error}</p>}
             {!loading && !error && Array.isArray(crypto) && crypto.length > 0 && (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Name</th>
-                            <th>Symbol</th>
-                            <th>Market Cap</th>
-                            <th>Price</th>
-                            <th>Available Supply</th>
-                            <th>Volume(24hrs)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* Only filter for search, do not re-sort or re-rank */}
+                <>
+                    <div
+                        className="crypto-flex-table"
+                        style={{
+                            width: '100%',
+                            background: '#fff',
+                            borderRadius: 12,
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                            overflow: 'hidden',
+                            margin: '0 auto'
+                        }}
+                    >
+                        <div
+                            className="crypto-flex-header"
+                            style={{
+                                color: '#333',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                fontWeight: 600,
+                                background: '#f5f6fa',
+                                padding: isMobile ? '0.7em 0.5em' : '1em 1.5em',
+                                fontSize: isMobile ? '0.95em' : '1.1em',
+                                borderBottom: '1px solid #eaeaea',
+                                justifyContent: 'center',
+                                textAlign: 'center'
+                            }}
+                        >
+                            <span style={{ flex: '0 0 50px', minWidth: 40, textAlign: 'center' }}>Rank</span>
+                            <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Name</span>
+                            <span style={{ flex: '0 0 70px', minWidth: 60, textAlign: 'center' }}>Symbol</span>
+                            {showPrice && (
+                                <span style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center' }}>Price</span>
+                            )}
+                            {showMarketCap && (
+                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Market Cap</span>
+                            )}
+                            {showSupply && (
+                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Available Supply</span>
+                            )}
+                            {showVolume && (
+                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Volume(24hrs)</span>
+                            )}
+                        </div>
                         {sortedCrypto
                             .filter((val) => val.name && val.name.toLowerCase().includes(search.toLowerCase()))
                             .map((val) => (
-                                <CryptoRow key={val.id} data={val} />
+                                <div
+                                    className="crypto-flex-row"
+                                    key={val.id}
+                                    style={{
+                                        color: '#333',
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: isMobile ? '0.7em 0.5em' : '1em 1.5em',
+                                        borderBottom: '1px solid #f0f0f0',
+                                        fontSize: isMobile ? '0.97em' : '1.05em',
+                                        background: 'inherit',
+                                        overflowX: 'auto',
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    <span className="crypto-flex-cell rank" style={{ flex: '0 0 50px', minWidth: 40, fontWeight: 500, textAlign: 'center' }}>{val.market_cap_rank}</span>
+                                    <span className="crypto-flex-cell logo" style={{ flex: '1 1 120px', minWidth: 90, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', textAlign: 'center' }}>
+                                        <img src={val.image} alt="logo" width="28px" height="28px" style={{ background: '#fff', borderRadius: '50%', border: '1px solid #eee', marginRight: 8 }} />
+                                        <span style={{ fontWeight: 500 }}>{val.name}</span>
+                                    </span>
+                                    <span className="crypto-flex-cell symbol" style={{ flex: '0 0 70px', minWidth: 60, textTransform: 'uppercase', color: '#888', textAlign: 'center' }}>{val.symbol}</span>
+                                    {showPrice && (
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center' }}>${Number(val.current_price).toLocaleString()}</span>
+                                    )}
+                                    {showMarketCap && (
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>${Number(val.market_cap).toLocaleString()}</span>
+                                    )}
+                                    {showSupply && (
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>{val.total_supply ? Number(val.total_supply).toLocaleString() : 'N/A'}</span>
+                                    )}
+                                    {showVolume && (
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>{val.total_volume ? Number(val.total_volume).toLocaleString() : 'N/A'}</span>
+                                    )}
+                                </div>
                             ))}
-                    </tbody>
-                </table>
+                    </div>
+                    {(windowWidth <= 800 && windowWidth >= 600) && (
+                        <button
+                            onClick={() => setShowAllColumns((v) => !v)}
+                            style={{
+                                margin: '1.2em auto',
+                                display: 'block',
+                                padding: '0.7em 1.5em',
+                                borderRadius: 8,
+                                border: 'none',
+                                background: '#007bff',
+                                color: '#fff',
+                                fontWeight: 600,
+                                fontSize: '1em',
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                            }}
+                        >
+                            {showAllColumns ? 'Show Less' : 'Show More'}
+                        </button>
+                    )}
+                    {isMobile && (
+                        <button
+                            onClick={() => setShowAllColumns((v) => !v)}
+                            style={{
+                                margin: '1.2em auto',
+                                display: 'block',
+                                padding: '0.7em 1.5em',
+                                borderRadius: 8,
+                                border: 'none',
+                                background: '#007bff',
+                                color: '#fff',
+                                fontWeight: 600,
+                                fontSize: '1em',
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                            }}
+                        >
+                            {showAllColumns ? 'Show Less' : 'Show More'}
+                        </button>
+                    )}
+                </>
             )}
             {!loading && !error && Array.isArray(crypto) && crypto.length === 0 && (
                 <p>No cryptocurrencies found.</p>
