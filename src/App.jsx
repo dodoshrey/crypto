@@ -48,62 +48,23 @@ function App() {
         const fetchData = () => {
             if (isFirstFetch) setLoading(true);
             setError(null);
-            const apiUrl = isGithubPages
-                ? 'https://thingproxy.freeboard.io/fetch/https://api.coincap.io/v2/assets'
-                : 'http://localhost:4000/api/coins';
+            const apiUrl = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false';
             Axios.get(apiUrl)
                 .then((res) => {
                     let coins = [];
-                    if (isGithubPages) {
-                        // Debug: log the raw response
-                        console.log('[DEBUG] CoinCap raw response:', res.data);
-                        let data = res.data;
-                        if (typeof data === 'string') {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (e) {
-                                console.error('[DEBUG] Failed to parse CoinCap string data:', e, data);
-                                setError('Failed to parse CoinCap data. Raw response: ' + data);
-                                if (isFirstFetch) setLoading(false);
-                                isFirstFetch = false;
-                                return;
-                            }
-                        }
-                        // Debug: log the parsed data
-                        console.log('[DEBUG] CoinCap parsed data:', data);
-                        if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
-                            setError('CoinCap returned no data. Raw response: ' + JSON.stringify(data));
-                            if (isFirstFetch) setLoading(false);
-                            isFirstFetch = false;
-                            return;
-                        }
-                        coins = data.data.map((item, idx) => ({
+                    // CoinGecko returns an array directly
+                    if (Array.isArray(res.data)) {
+                        coins = res.data.map((item, idx) => ({
                             id: item.id,
                             name: item.name,
-                            symbol: item.symbol,
-                            image: `https://assets.coincap.io/assets/icons/${item.symbol ? item.symbol.toLowerCase() : ''}@2x.png`,
-                            market_cap: Number(item.marketCapUsd),
-                            current_price: Number(item.priceUsd),
-                            total_supply: Number(item.supply),
-                            total_volume: Number(item.volumeUsd24Hr),
-                            market_cap_rank: idx + 1,
+                            symbol: item.symbol.toUpperCase(),
+                            image: item.image,
+                            market_cap: item.market_cap,
+                            current_price: item.current_price,
+                            total_supply: item.total_supply,
+                            total_volume: item.total_volume,
+                            market_cap_rank: item.market_cap_rank || (idx + 1),
                         }));
-                    } else {
-                        coins = Array.isArray(res.data.Data)
-                            ? res.data.Data.map((item) => {
-                                const coin = item.CoinInfo || {};
-                                const raw = (item.RAW && item.RAW.USD) || {};
-                                return {
-                                    id: coin.Id,
-                                    name: coin.FullName,
-                                    symbol: coin.Name,
-                                    image: `https://www.cryptocompare.com${coin.ImageUrl || ''}`,
-                                    market_cap: raw.MKTCAP || 0,
-                                    current_price: raw.PRICE || 0,
-                                    total_supply: raw.SUPPLY || 'N/A',
-                                    total_volume: raw.VOLUME24HOUR || 0,
-                                };
-                            }) : [];
                     }
                     // Sort by market cap and assign rank
                     const sorted = coins.slice().sort((a, b) => Number(b.market_cap) - Number(a.market_cap))
