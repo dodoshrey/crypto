@@ -60,11 +60,11 @@ function App() {
                                 id: item.id,
                                 name: item.name,
                                 symbol: item.symbol,
-                                image: `https://assets.coincap.io/assets/icons/${item.symbol.toLowerCase()}@2x.png`,
-                                market_cap: item.marketCapUsd,
-                                current_price: item.priceUsd,
-                                total_supply: item.supply,
-                                total_volume: item.volumeUsd24Hr,
+                                image: `https://assets.coincap.io/assets/icons/${item.symbol ? item.symbol.toLowerCase() : ''}@2x.png`,
+                                market_cap: Number(item.marketCapUsd),
+                                current_price: Number(item.priceUsd),
+                                total_supply: Number(item.supply),
+                                total_volume: Number(item.volumeUsd24Hr),
                                 market_cap_rank: idx + 1,
                             }))
                             : [];
