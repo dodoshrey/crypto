@@ -55,8 +55,17 @@ function App() {
                 .then((res) => {
                     let coins = [];
                     if (isGithubPages) {
-                        coins = Array.isArray(res.data.data)
-                            ? res.data.data.map((item, idx) => ({
+                        // Defensive: CoinCap via allorigins returns the data as a string if content-type is not set
+                        let data = res.data;
+                        if (typeof data === 'string') {
+                            try {
+                                data = JSON.parse(data);
+                            } catch (e) {
+                                data = { data: [] };
+                            }
+                        }
+                        coins = Array.isArray(data.data)
+                            ? data.data.map((item, idx) => ({
                                 id: item.id,
                                 name: item.name,
                                 symbol: item.symbol,
