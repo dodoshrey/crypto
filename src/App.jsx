@@ -49,7 +49,7 @@ function App() {
             if (isFirstFetch) setLoading(true);
             setError(null);
             const apiUrl = isGithubPages
-                ? 'https://corsproxy.io/?https://api.coincap.io/v2/assets'
+                ? 'https://thingproxy.freeboard.io/fetch/https://api.coincap.io/v2/assets'
                 : 'http://localhost:4000/api/coins';
             Axios.get(apiUrl)
                 .then((res) => {
