@@ -55,28 +55,39 @@ function App() {
                 .then((res) => {
                     let coins = [];
                     if (isGithubPages) {
-                        // Defensive: CoinCap via allorigins returns the data as a string if content-type is not set
+                        // Debug: log the raw response
+                        console.log('[DEBUG] CoinCap raw response:', res.data);
                         let data = res.data;
                         if (typeof data === 'string') {
                             try {
                                 data = JSON.parse(data);
                             } catch (e) {
-                                data = { data: [] };
+                                console.error('[DEBUG] Failed to parse CoinCap string data:', e, data);
+                                setError('Failed to parse CoinCap data. Raw response: ' + data);
+                                if (isFirstFetch) setLoading(false);
+                                isFirstFetch = false;
+                                return;
                             }
                         }
-                        coins = Array.isArray(data.data)
-                            ? data.data.map((item, idx) => ({
-                                id: item.id,
-                                name: item.name,
-                                symbol: item.symbol,
-                                image: `https://assets.coincap.io/assets/icons/${item.symbol ? item.symbol.toLowerCase() : ''}@2x.png`,
-                                market_cap: Number(item.marketCapUsd),
-                                current_price: Number(item.priceUsd),
-                                total_supply: Number(item.supply),
-                                total_volume: Number(item.volumeUsd24Hr),
-                                market_cap_rank: idx + 1,
-                            }))
-                            : [];
+                        // Debug: log the parsed data
+                        console.log('[DEBUG] CoinCap parsed data:', data);
+                        if (!data.data || !Array.isArray(data.data) || data.data.length === 0) {
+                            setError('CoinCap returned no data. Raw response: ' + JSON.stringify(data));
+                            if (isFirstFetch) setLoading(false);
+                            isFirstFetch = false;
+                            return;
+                        }
+                        coins = data.data.map((item, idx) => ({
+                            id: item.id,
+                            name: item.name,
+                            symbol: item.symbol,
+                            image: `https://assets.coincap.io/assets/icons/${item.symbol ? item.symbol.toLowerCase() : ''}@2x.png`,
+                            market_cap: Number(item.marketCapUsd),
+                            current_price: Number(item.priceUsd),
+                            total_supply: Number(item.supply),
+                            total_volume: Number(item.volumeUsd24Hr),
+                            market_cap_rank: idx + 1,
+                        }));
                     } else {
                         coins = Array.isArray(res.data.Data)
                             ? res.data.Data.map((item) => {
