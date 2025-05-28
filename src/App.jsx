@@ -176,27 +176,29 @@ function App() {
                                 background: '#f5f6fa',
                                 padding: isMobile ? '0.7em 0.5em' : '1em 1.5em',
                                 fontSize: isMobile ? '0.95em' : '1.1em',
-                                borderBottom: '1px solid #eaeaea',
+                                borderBottom: '2px solid #bdbdbd',
                                 justifyContent: 'center',
                                 textAlign: 'center'
                             }}
                         >
-                            <span style={{ flex: '0 0 50px', minWidth: 40, textAlign: 'center' }}>Rank</span>
-                            <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Name</span>
-                            <span style={{ flex: '0 0 70px', minWidth: 60, textAlign: 'center' }}>Symbol</span>
+                            <span style={{ flex: '0 0 50px', minWidth: 40, textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>Rank</span>
+                            <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>Name</span>
+                            <span style={{ flex: '0 0 70px', minWidth: 60, textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>Symbol</span>
                             {showPrice && (
-                                <span style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center' }}>Price</span>
+                                <span style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center', borderRight: showMarketCap ? '1px solid rgb(0, 0, 0)' : 'none' }}>Price</span>
                             )}
                             {showMarketCap && (
-                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Market Cap</span>
+                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center', borderRight: showVolume ? '1px solid rgb(0, 0, 0)' : 'none' }}>Market Cap</span>
                             )}
                             {showSupply && (
-                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Available Supply</span>
+                                <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center', borderRight: showVolume ? '1px solid rgb(0, 0, 0)' : 'none' }}>Available Supply</span>
                             )}
                             {showVolume && (
                                 <span style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>Volume(24hrs)</span>
                             )}
                         </div>
+                        {/* Divider between header and rows */}
+                        <div style={{ width: '100%', height: 0, borderBottom: '2px solid #bdbdbd' }} />
                         {sortedCrypto
                             .filter((val) => val.name && val.name.toLowerCase().includes(search.toLowerCase()))
                             .map((val) => (
@@ -217,20 +219,20 @@ function App() {
                                         textAlign: 'center'
                                     }}
                                 >
-                                    <span className="crypto-flex-cell rank" style={{ flex: '0 0 50px', minWidth: 40, fontWeight: 500, textAlign: 'center' }}>{val.market_cap_rank}</span>
-                                    <span className="crypto-flex-cell logo" style={{ flex: '1 1 120px', minWidth: 90, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', textAlign: 'center' }}>
+                                    <span className="crypto-flex-cell rank" style={{ flex: '0 0 50px', minWidth: 40, fontWeight: 500, textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>{val.market_cap_rank}</span>
+                                    <span className="crypto-flex-cell logo" style={{ flex: '1 1 120px', minWidth: 90, display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>
                                         <img src={val.image} alt="logo" width="28px" height="28px" style={{ background: '#fff', borderRadius: '50%', border: '1px solid #eee', marginRight: 8 }} />
                                         <span style={{ fontWeight: 500 }}>{val.name}</span>
                                     </span>
-                                    <span className="crypto-flex-cell symbol" style={{ flex: '0 0 70px', minWidth: 60, textTransform: 'uppercase', color: '#888', textAlign: 'center' }}>{val.symbol}</span>
+                                    <span className="crypto-flex-cell symbol" style={{ flex: '0 0 70px', minWidth: 60, textTransform: 'uppercase', color: '#888', textAlign: 'center', borderRight: '1px solid rgb(0, 0, 0)' }}>{val.symbol}</span>
                                     {showPrice && (
-                                        <span className="crypto-flex-cell" style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center' }}>${Number(val.current_price).toLocaleString()}</span>
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 100px', minWidth: 80, textAlign: 'center', borderRight: showMarketCap ? '1px solid rgb(0, 0, 0)' : 'none' }}>${Number(val.current_price).toLocaleString()}</span>
                                     )}
                                     {showMarketCap && (
-                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>${Number(val.market_cap).toLocaleString()}</span>
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center', borderRight: showVolume ? '1px solid rgb(0, 0, 0)' : 'none' }}>${Number(val.market_cap).toLocaleString()}</span>
                                     )}
                                     {showSupply && (
-                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>{val.total_supply ? Number(val.total_supply).toLocaleString() : 'N/A'}</span>
+                                        <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center', borderRight: showVolume ? '1px solid rgb(0, 0, 0)' : 'none' }}>{val.total_supply ? Number(val.total_supply).toLocaleString() : 'N/A'}</span>
                                     )}
                                     {showVolume && (
                                         <span className="crypto-flex-cell" style={{ flex: '1 1 120px', minWidth: 90, textAlign: 'center' }}>{val.total_volume ? Number(val.total_volume).toLocaleString() : 'N/A'}</span>
